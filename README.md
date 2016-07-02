@@ -1,2 +1,2 @@
 # Paraphrase_bot
-Telegram bot which collect paraphrases of facts
+Telegram bot which collects paraphrases of facts
