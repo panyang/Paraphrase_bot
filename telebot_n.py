@@ -45,7 +45,14 @@ def create(message):
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def me(message):
-    bot.send_message(message.chat.id, message.text)
+    # Проверка на наличие участников
+    if 'X' and 'Y' in message.text.split(' '):
+        db.saveResult(message.text)
+        bot.send_message(message.chat.id, 'Спасибо, Ваш ответ записан')
+        # Если ответ записан, то должен быть выход из функции
+    else:
+        bot.send_message(message.chat.id, 'Вы не использовали обязательных участников')
+
 
 # def listener(messages):
 # 	for m in messages:
