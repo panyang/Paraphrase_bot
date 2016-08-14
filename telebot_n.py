@@ -42,6 +42,9 @@ markup = types.ReplyKeyboardMarkup()
 markup.row('/create', '/verify')
 markup.row('/start', '/help')
 
+markup_y_n = types.ReplyKeyboardMarkup()
+markup_y_n.row('ДА', 'НЕТ')
+
 PERIPHRASE_CREATE = 0
 PERIPHRASE_CREATED = 1
 PERIPHRASE_VERIFY = 3
@@ -53,10 +56,10 @@ periphrase_step = {}
 @bot.message_handler(commands=['start', 'help'])
 def send_message(message):
     """ Приветственное сообщение. """
-    bot.send_message(message.chat.id, "Выберите:", reply_markup=markup)  # Пользовательская клавиатура
+    # bot.send_message(message.chat.id, "Выберите:", reply_markup=markup)  # Пользовательская клавиатура
     bot.send_message(message.chat.id, 'Привет, я FactCollector! '
                                       'Выбери команду /create, чтобы перефразировать предложение. Выбери команду '
-                                      '/verify, чтобы подтвердить предложение')
+                                      '/verify, чтобы подтвердить предложение', reply_markup=markup)
 
 
 @bot.message_handler(commands=['create'])
@@ -80,6 +83,7 @@ def me_create(message):
         periphrase_step[message.chat.id] = PERIPHRASE_CREATED
     else:
         bot.send_message(message.chat.id, 'Вы не использовали обязательных участников')
+    # Добавить проверку на оригинальность
 
 
 @bot.message_handler(commands=['verify'])
@@ -88,7 +92,7 @@ def verify(message):
     bot.send_message(message.chat.id, parse_mode='HTML', text='Сейчас Вы увидите предложение,которое нужно будет '
                                                               'оценить. Введите <strong>ДА</strong>, '
                                                               'если предложение содержит факт, и <strong>НЕТ</strong>, '
-                                                              'если не содержит')
+                                                              'если не содержит', reply_markup=markup_y_n)
     # Сделать кастомную клавиатуру и больше выборов (подтвердить/содержит), выделить жирным
     bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase())
     periphrase_step[message.chat.id] = PERIPHRASE_VERIFY
@@ -101,7 +105,7 @@ def me_verify(message):
     if 'ДА' or 'НЕТ' in message.text.split(' '):
         db.save_result(message.text)
         keyboard_hider = types.ReplyKeyboardHide()
-        bot.send_message(message.chat.id, 'Спасибо, Ваш ответ записан')
+        bot.send_message(message.chat.id, 'Спасибо, Ваш ответ записан', reply_markup=markup)
         # Если ответ записан, то должен быть выход из функции
         periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED
     else:
