@@ -10,7 +10,7 @@ db = DatabaseInteraction()
 
 # Создание кастомной клавиатуры
 markup = types.ReplyKeyboardMarkup()
-markup.row('/create', '/verify')
+markup.row('/create', '/verify', '/verify2')
 markup.row('/start', '/help')
 
 markup_y_n = types.ReplyKeyboardMarkup()
@@ -18,11 +18,10 @@ markup_y_n.row('ДА', 'НЕТ')
 
 PERIPHRASE_CREATE = 'create'
 PERIPHRASE_CREATED = 'created'
-PERIPHRASE_VERIFY = 1       # четное число
-PERIPHRASE_VERIFIED = 2     # нечетное число
-
-PERIPHRASE_CHECK = 'check'
-PERIPHRASE_CHECKED = 'checked'
+PERIPHRASE_VERIFY = 1
+PERIPHRASE_VERIFIED = 2
+PERIPHRASE_VERIFY2 = 3
+PERIPHRASE_VERIFIED2 = 4
 
 periphrase_step = {}
 
@@ -74,8 +73,6 @@ def verify(message):
                                                               'оценить. Введите <strong>ДА</strong>, '
                                                               'если предложение содержит факт, и <strong>НЕТ</strong>, '
                                                               'если не содержит', reply_markup=markup_y_n)
-    # Сделать кастомную клавиатуру и больше выборов (подтвердить/содержит), выделить жирным
-    bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase())
     periphrase_step[message.chat.id] = PERIPHRASE_VERIFY
     # где-то надо прописывать, какой именно факт
 
@@ -83,23 +80,72 @@ def verify(message):
 @bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == PERIPHRASE_VERIFY)
 def me_verify(message):
     """
-    Пользователь вводит перифраз, который потом записывается в базу данных.
+    Пользователь вводит ответ, который потом записывается в базу данных.
     """
+    what_to_check = db.get_random_periphrase()
+    bot.send_message(message.chat.id, parse_mode='HTML', text=what_to_check)
     # Проверка на наличие участников
-    if 'ДА' or 'НЕТ' in message.text.split(' '):
-        db.save_value(message.text)
+    if 'ДА' in message.text.split(' '):
+        periphrase_points = db.get_periphrase_points(what_to_check)
+        periphrase_points += 1
+        db.save_periphrase_points(periphrase_points)
+        bot.send_message(message.chat.id, 'Спасибо, Ваш ответ записан', reply_markup=markup)
+        periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED
+    elif 'НЕТ' in message.text.split(' '):
+        periphrase_points = db.get_periphrase_points(what_to_check)
+        periphrase_points -= 1
+        db.save_periphrase_points(periphrase_points)
         # keyboard_hider = types.ReplyKeyboardHide()
         bot.send_message(message.chat.id, 'Спасибо, Ваш ответ записан', reply_markup=markup)
-        # Если ответ записан, то должен быть выход из функции
         periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED
     else:
         bot.send_message(message.chat.id, 'Вы не использовали обязательных участников')
+
+
+@bot.message_handler(commands=['verify2'])
+def verify_check(message):
+    """
+    Верификация перифразов, про которые мы точно знаем, содержится в них факт или нет. Нужно для проверки пользователя
+    'на вшивость'.
+    """
+    bot.send_message(message.chat.id, parse_mode='HTML', text='Сейчас Вы увидите предложение,которое нужно будет '
+                                                              'оценить. Введите <strong>ДА</strong>, '
+                                                              'если предложение содержит факт, и <strong>НЕТ</strong>, '
+                                                              'если не содержит', reply_markup=markup_y_n)
+    # Сделать кастомную клавиатуру и больше выборов (подтвердить/содержит), выделить жирным
+    periphrase_step[message.chat.id] = PERIPHRASE_VERIFY2
+    # где-то надо прописывать, какой именно факт
+
+
+@bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == PERIPHRASE_VERIFY2)
+def me_verify_check(message):
+    """
+    Пользователь вводит свой ответ. Его ответ сравнивается с нашим ответом и если ответы совпали, к очкам пользователя,
+    взятым из базы данных, добавляется один и записывается. Еси не совпали, то удаляется одно очко соответственно.
+    """
+    # Проверка на наличие участников
+    what_to_check = db.get_check_periphrase()
+    bot.send_message(message.chat.id, parse_mode='HTML', text=what_to_check)
+    answer = db.get_periphrase_value(what_to_check)
+    if 'ДА' or 'НЕТ' in message.text.split(' '):
+        if message.text == answer:
+            person_points = db.get_person_points('author')
+            person_points += 1
+            db.save_person_points(person_points)
+            bot.send_message(message.chat.id, 'Спасибо, Ваш ответ записан', reply_markup=markup)
+            periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED2
+        else:
+            person_points = db.get_person_points('author')
+            person_points -= 1
+            db.save_person_points(person_points)
+            bot.send_message(message.chat.id, 'Спасибо, Ваш ответ записан', reply_markup=markup)
+            periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED2
+    else:
+        bot.send_message(message.chat.id, 'Вы не использовали обязательных участников')
+
 
 if __name__ == '__main__':
     # bot.set_update_listener(listener)
     bot.polling(none_stop=True)
     while True:
         time.sleep(200)
-
-# me только во включенном режиме create, и для verify то же самое
-# Разрешать получать только один ответ
