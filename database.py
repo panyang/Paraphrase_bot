@@ -7,7 +7,7 @@ class DatabaseInteraction:
 
     def connect(self, connection_string):
         """
-        Подключиться по connection_string.
+        Подключиться по connection_string к базе данных.
         """
         print('Connecting ({}) ...'.format(connection_string))
 
@@ -51,18 +51,18 @@ class DatabaseInteraction:
         print('Saving periphrase_points ({}) ...'.format(periphrase_points))
 
 
-# Получить перифраз, про который мы знаем, есть ли в нем факт. Получить оценку перифраза и сравнить в введенными.
+# Получить перифраз, про который мы знаем, есть ли в нем факт. Получить оценку перифраза и сравнить с введенным ответом.
 # Получить очки человека. Сохранить перекалькулированные очки человека в базу данных.
 
     def get_check_periphrase(self):
         """
-        Получить перифраз из базы данных, про который мы точно знаем, содержится там факт или нет.
+        Получить перифраз из базы данных, про который мы точно знаем, содержится ли там факт.
         """
         print('Check periphrase')
         return '<strong>ПЕРСОНА</strong> работает в <strong>ОРГАНИЗАЦИЯ</strong>'
 
 
-    def get_periphrase_value(self, fact):
+    def get_periphrase_value(self, periphrase):
         """
         Получить из базы данных ответ на вопрос, содержится ли в перифразе факт.
         """
@@ -80,7 +80,7 @@ class DatabaseInteraction:
 
     def save_person_points(self, person_points):
         """
-        Добавить в базу данных очки на доверия пользователю в зависимости от того, правильно или нет он определил
+        Добавить в базу данных очки на доверия пользователю в зависимости от того, правильно ли он определил
         наличие факта в перифразе.
         """
         print('Saving person_points ({}) ...'.format(person_points))
@@ -88,9 +88,13 @@ class DatabaseInteraction:
 ###############################
 
     def disconnect(self):
-        """ Отключиться"""
+        """
+        Отключиться от базы данных.
+        """
         print('Disconnecting...')
 
     def __init__(self):
-        """ Конструктор"""
+        """
+        Конструктор.
+        """
         print('Initializing database stub object')
