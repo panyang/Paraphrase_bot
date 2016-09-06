@@ -70,9 +70,9 @@ def verify(message):
     """
     Верификация перифразов, предложенных другими пользователями. Нужно на кнопках выбрать да или нет.
     """
-    bot.send_message(message.chat.id, parse_mode='HTML', text='Сейчас увидишь предложение, которое нужно будет '
+    bot.send_message(message.chat.id, parse_mode='HTML', text='Сейчас ты увидишь предложение, которое нужно будет '
                                                               'оценить. Нажми <strong>ДА</strong>, '
-                                                              'если предложение содержит факт, и <strong>НЕТ</strong>, '
+                                                              'если предложение содержит факт работы, и <strong>НЕТ</strong>, '
                                                               'если не содержит', reply_markup=markup_y_n)
     periphrase_step[message.chat.id] = PERIPHRASE_VERIFY
     what_to_check = db.get_random_periphrase()
@@ -113,7 +113,7 @@ def verify_check(message):
     """
     bot.send_message(message.chat.id, parse_mode='HTML', text='Сейчас ты увидишь предложение, которое нужно будет '
                                                               'оценить. Нажми <strong>ДА</strong>, '
-                                                              'если предложение содержит факт, и <strong>НЕТ</strong>, '
+                                                              'если предложение содержит факт работы, и <strong>НЕТ</strong>, '
                                                               'если не содержит', reply_markup=markup_y_n)
     periphrase_step[message.chat.id] = PERIPHRASE_VERIFY2
     what_to_check = db.get_random_periphrase()
