@@ -1,2 +1,11 @@
 # Paraphrase_bot
-Telegram bot which collects paraphrases of facts
+- Телеграм-бот, который собирает базу данных перифразов фактов
+
+<b> Как запустить бота? </b>
+
+1. Склонировать репозиторий Paraphrase_bot
+2. Установить модуль telebot: pip install pytelegrambotapi
+3. Запустить файл telebot_n.py с помощью интерпретатора Python 3
+4. Зайти в telegram и добавить бота: ввести в поисковой строке @FactCollector_bot
+5. Написать в диалоге с ботом '/start'
+6. Следовать инструкциям
