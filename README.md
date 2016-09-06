@@ -3,7 +3,7 @@
 
 <b> Как запустить бота? </b>
 
-1. Склонировать репозиторий Paraphrase_bot
+1. Склонировать репозиторий <i>Paraphrase_bot</i>
 2. Установить модуль telebot: <i>pip install pytelegrambotapi</i>
 3. Запустить файл <i>telebot_n.py</i> с помощью интерпретатора Python 3
 4. Зайти в telegram и добавить бота: ввести в поисковой строке <i>@FactCollector_bot</i>
