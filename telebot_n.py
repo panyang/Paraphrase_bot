@@ -47,7 +47,7 @@ with open('data/sorry.txt', 'r') as sorry:
 with open('data/create.txt', 'r') as ccreate:
     ccreate = ccreate.readlines()
 
-with open('data/verity.txt', 'r') as vverify:
+with open('data/verify.txt', 'r') as vverify:
     vverify = vverify.readlines()
 
 with open('data/check.txt', 'r') as ccheck:
@@ -180,7 +180,7 @@ def me_verify_check(message):
     вычитается одно очко соответственно.
     """
     # Проверка на наличие участников
-    what_to_check = db.get_check_periphrase()  
+    what_to_check = db.get_check_periphrase()
     answer = db.get_periphrase_value(what_to_check)
     if 'ДА' or 'НЕТ' in message.text.split(' '):
         if message.text == answer:
@@ -204,3 +204,5 @@ if __name__ == '__main__':
     bot.polling(none_stop=True)
     while True:
         time.sleep(200)
+
+# В help описать понятия: факт работы, обязательно использовать участников. Задай свой вопрос
