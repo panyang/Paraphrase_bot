@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import random
 
 class DatabaseInteraction:
     """
@@ -24,8 +25,14 @@ class DatabaseInteraction:
         """
         Получить рандомный перифраз из базы данных.
         """
+        periphrases = ['<strong>Вася</strong> предоставляет услуги в <strong>ABBYY</strong>',
+                       '<strong>Вася</strong> работает в <strong>ABBYY</strong>',
+                       '<strong>Вася</strong> является сотрудником в компании <strong>ABBYY</strong>',
+                       '<strong>Вася</strong> ходит на работу в <strong>ABBYY</strong>',
+                       '<strong>Вася</strong> выполняет свои рабочие обязанности в компании <strong>ABBYY</strong>']
         print('Random periphrase')
-        return '<strong>ПЕРСОНА</strong> предоставляет услуги по ремонту машин в <strong>ОРГАНИЗАЦИЯ</strong>'
+        # return '<strong>ПЕРСОНА</strong> предоставляет услуги по ремонту машин в <strong>ОРГАНИЗАЦИЯ</strong>'
+        return random.choice(periphrases)
 
     def save_result(self, result):
         """

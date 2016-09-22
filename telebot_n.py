@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import random
+
 import telebot
-import config
 from telebot import types
+
+import config
 from database import DatabaseInteraction
 
 bot = telebot.TeleBot(config.token)
@@ -16,14 +19,39 @@ markup.row('/start', '/help')
 markup_y_n = types.ReplyKeyboardMarkup()
 markup_y_n.row('ДА', 'НЕТ')
 
+markup_help = types.ReplyKeyboardMarkup()
+markup_help.row('Помочь', 'Занят')
+
 PERIPHRASE_CREATE = 'create'
 PERIPHRASE_CREATED = 'created'
 PERIPHRASE_VERIFY = 1
 PERIPHRASE_VERIFIED = 2
 PERIPHRASE_VERIFY2 = 3
 PERIPHRASE_VERIFIED2 = 4
+WILL_YOU_HELP_СREATE = 'will_you_help_create'
+WILL_YOU_HELP_СHECK = 'will_you_help_сheck'
+WILL_YOU_HELP_VERIFY = 'will_you_help_verify'
+BUSY = 'busy'
 
 periphrase_step = {}
+
+with open('data/hello.txt', 'r') as hello:
+    hello = hello.readlines()
+
+with open('data/thanks.txt', 'r') as thanks:
+    thanks = thanks.readlines()
+
+with open('data/sorry.txt', 'r') as sorry:
+    sorry = sorry.readlines()
+
+with open('data/create.txt', 'r') as ccreate:
+    ccreate = ccreate.readlines()
+
+with open('data/verity.txt', 'r') as vverify:
+    vverify = vverify.readlines()
+
+with open('data/check.txt', 'r') as ccheck:
+    ccheck = ccheck.readlines()
 
 
 @bot.message_handler(commands=['start', 'help'])
@@ -31,10 +59,7 @@ def send_message(message):
     """
     Приветственное сообщение.
     """
-    bot.send_message(message.chat.id, 'Привет, я FactCollector! '
-                                      'Выбери команду /create, чтобы перефразировать предложение. Выбери команду '
-                                      '/verify, чтобы подтвердить предложение, выбери команду /verify2, чтобы '
-                                      'проверить себя.', reply_markup=markup)
+    bot.send_message(message.chat.id, random.choice(hello), reply_markup=markup)
 
 
 @bot.message_handler(commands=['create'])
@@ -42,11 +67,20 @@ def create(message):
     """
     При выборе команды create пользователь получает рандомный перифраз.
     """
-    bot.send_message(message.chat.id, 'Сейчас ты увидишь предложение,'
-                                      ' которое нужно будет перефразировать. Введи предложение, '
-                                      'содержащее отношение между участниками данной ситуации')
-    bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase())
-    periphrase_step[message.chat.id] = PERIPHRASE_CREATE
+    bot.send_message(message.chat.id, str(random.choice(ccreate)), reply_markup=markup_help)
+    periphrase_step[message.chat.id] = WILL_YOU_HELP_СREATE
+
+
+@bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == WILL_YOU_HELP_СREATE)
+def will_you_help_create(message):
+    if 'Помочь' in message.text.split(' '):
+        bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase())
+        keyboard_hider = types.ReplyKeyboardHide()
+        bot.send_message(message.chat.id, 'Как это сказать иначе?', reply_markup=keyboard_hider)
+        periphrase_step[message.chat.id] = PERIPHRASE_CREATE
+    if 'Занят' in message.text.split(' '):
+        bot.send_message(message.chat.id, str(random.choice(sorry)), reply_markup=markup)
+        periphrase_step[message.chat.id] = BUSY
 
 
 @bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == PERIPHRASE_CREATE)
@@ -54,11 +88,12 @@ def me_create(message):
     """
     Пользователь вводит перифраз, который потом записывается в базу данных.
     """
+
     # Проверка на наличие участников
-    if 'ПЕРСОНА' and 'ОРГАНИЗАЦИЯ' in message.text.split(' '):
+    if 'Вася' and 'ABBYY' in message.text.split(' '):
         db.save_result(message.text)
         # keyboard_hider = types.ReplyKeyboardHide()
-        bot.send_message(message.chat.id, 'Спасибо, ответ записан')  # reply_markup=keyboard_hider) убираем клаву
+        bot.send_message(message.chat.id, random.choice(thanks), reply_markup=markup)
         periphrase_step[message.chat.id] = PERIPHRASE_CREATED
     else:
         bot.send_message(message.chat.id, 'Ты не использовал обязательных участников')
@@ -70,14 +105,24 @@ def verify(message):
     """
     Верификация перифразов, предложенных другими пользователями. Нужно на кнопках выбрать да или нет.
     """
-    bot.send_message(message.chat.id, parse_mode='HTML', text='Сейчас ты увидишь предложение, которое нужно будет '
-                                                              'оценить. Нажми <strong>ДА</strong>, '
-                                                              'если предложение содержит факт работы, и <strong>НЕТ</strong>, '
-                                                              'если не содержит', reply_markup=markup_y_n)
-    periphrase_step[message.chat.id] = PERIPHRASE_VERIFY
-    what_to_check = db.get_random_periphrase()
-    bot.send_message(message.chat.id, parse_mode='HTML', text=what_to_check)
+    bot.send_message(message.chat.id, str(random.choice(vverify)), reply_markup=markup_help)
+    periphrase_step[message.chat.id] = WILL_YOU_HELP_VERIFY
     # где-то надо прописывать, какой именно факт
+
+
+@bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == WILL_YOU_HELP_VERIFY)
+def will_you_help_verify(message):
+    if 'Помочь' in message.text.split(' '):
+        what_to_check = db.get_random_periphrase()
+        bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase(), reply_markup=markup_y_n)
+        bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase())
+        # bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase())
+        # keyboard_hider = types.ReplyKeyboardHide()
+        bot.send_message(message.chat.id, 'Эти предложения об одном и том же?', reply_markup=markup_y_n)
+        periphrase_step[message.chat.id] = PERIPHRASE_VERIFY
+    if 'Занят' in message.text.split(' '):
+        bot.send_message(message.chat.id, str(random.choice(sorry)), reply_markup=markup)
+        periphrase_step[message.chat.id] = BUSY
 
 
 @bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == PERIPHRASE_VERIFY)
@@ -92,14 +137,14 @@ def me_verify(message):
         periphrase_points = db.get_periphrase_points(what_to_check)
         periphrase_points += 1
         db.save_periphrase_points(periphrase_points)
-        bot.send_message(message.chat.id, 'Спасибо, ответ записан', reply_markup=markup)
+        bot.send_message(message.chat.id, random.choice(thanks), reply_markup=markup)
         periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED
     elif 'НЕТ' in message.text.split(' '):
         periphrase_points = db.get_periphrase_points(what_to_check)
         periphrase_points -= 1
         db.save_periphrase_points(periphrase_points)
         # keyboard_hider = types.ReplyKeyboardHide()
-        bot.send_message(message.chat.id, 'Спасибо, ответ записан', reply_markup=markup)
+        bot.send_message(message.chat.id, random.choice(thanks), reply_markup=markup)
         periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED
     else:
         bot.send_message(message.chat.id, 'Ты не использовал обязательных участников')
@@ -111,14 +156,20 @@ def verify_check(message):
     Верификация перифразов, про которые мы точно знаем, содержится в них факт или нет. Нужно для проверки пользователя
     'на вшивость'.
     """
-    bot.send_message(message.chat.id, parse_mode='HTML', text='Сейчас ты увидишь предложение, которое нужно будет '
-                                                              'оценить. Нажми <strong>ДА</strong>, '
-                                                              'если предложение содержит факт работы, и <strong>НЕТ</strong>, '
-                                                              'если не содержит', reply_markup=markup_y_n)
-    periphrase_step[message.chat.id] = PERIPHRASE_VERIFY2
-    what_to_check = db.get_random_periphrase()
-    bot.send_message(message.chat.id, parse_mode='HTML', text=what_to_check)
+    bot.send_message(message.chat.id, random.choice(ccheck), reply_markup=markup_help)
+    periphrase_step[message.chat.id] = WILL_YOU_HELP_СHECK
     # где-то надо прописывать, какой именно факт
+
+
+@bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == WILL_YOU_HELP_СHECK)
+def will_you_help_check(message):
+    if 'Помочь' in message.text.split(' '):
+        bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase(), reply_markup=markup_y_n)
+        bot.send_message(message.chat.id, 'Здесь есть факт работы?')
+        periphrase_step[message.chat.id] = PERIPHRASE_VERIFY2
+    if 'Занят' in message.text.split(' '):
+        bot.send_message(message.chat.id, str(random.choice(sorry)), reply_markup=markup)
+        periphrase_step[message.chat.id] = BUSY
 
 
 @bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == PERIPHRASE_VERIFY2)
@@ -129,21 +180,20 @@ def me_verify_check(message):
     вычитается одно очко соответственно.
     """
     # Проверка на наличие участников
-    what_to_check = db.get_check_periphrase() # !!!!!
-    # bot.send_message(message.chat.id, parse_mode='HTML', text=what_to_check)
+    what_to_check = db.get_check_periphrase()  
     answer = db.get_periphrase_value(what_to_check)
     if 'ДА' or 'НЕТ' in message.text.split(' '):
         if message.text == answer:
             person_points = db.get_person_points('author')
             person_points += 1
             db.save_person_points(person_points)
-            bot.send_message(message.chat.id, 'Спасибо, ответ записан', reply_markup=markup)
+            bot.send_message(message.chat.id, random.choice(thanks), reply_markup=markup)
             periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED2
         else:
             person_points = db.get_person_points('author')
             person_points -= 1
             db.save_person_points(person_points)
-            bot.send_message(message.chat.id, 'Спасибо, ответ записан', reply_markup=markup)
+            bot.send_message(message.chat.id, random.choice(thanks), reply_markup=markup)
             periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED2
     else:
         bot.send_message(message.chat.id, 'Ты не использовал обязательных участников')
