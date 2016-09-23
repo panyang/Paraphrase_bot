@@ -2,6 +2,7 @@
 
 import random
 
+import pymorphy2
 import telebot
 from telebot import types
 
@@ -10,6 +11,7 @@ from database import DatabaseInteraction
 
 bot = telebot.TeleBot(config.token)
 db = DatabaseInteraction()
+morph = pymorphy2.MorphAnalyzer()
 
 # Создание кастомной клавиатуры
 markup = types.ReplyKeyboardMarkup()
@@ -17,17 +19,17 @@ markup.row('/create', '/verify', '/verify2')
 markup.row('/start', '/help')
 
 markup_y_n = types.ReplyKeyboardMarkup()
-markup_y_n.row('ДА', 'НЕТ')
+markup_y_n.row('Да', 'Нет')
 
 markup_help = types.ReplyKeyboardMarkup()
 markup_help.row('Помочь', 'Занят')
 
 PERIPHRASE_CREATE = 'create'
 PERIPHRASE_CREATED = 'created'
-PERIPHRASE_VERIFY = 1
-PERIPHRASE_VERIFIED = 2
-PERIPHRASE_VERIFY2 = 3
-PERIPHRASE_VERIFIED2 = 4
+PERIPHRASE_VERIFY = 'verify'
+PERIPHRASE_VERIFIED = 'verified'
+PERIPHRASE_VERIFY2 = 'verify2'
+PERIPHRASE_VERIFIED2 = 'verified2'
 WILL_YOU_HELP_СREATE = 'will_you_help_create'
 WILL_YOU_HELP_СHECK = 'will_you_help_сheck'
 WILL_YOU_HELP_VERIFY = 'will_you_help_verify'
@@ -38,11 +40,8 @@ periphrase_step = {}
 with open('data/hello.txt', 'r') as hello:
     hello = hello.readlines()
 
-with open('data/thanks.txt', 'r') as thanks:
-    thanks = thanks.readlines()
-
-with open('data/sorry.txt', 'r') as sorry:
-    sorry = sorry.readlines()
+with open('data/help.txt', 'r') as help:
+    help = help.readlines()
 
 with open('data/create.txt', 'r') as ccreate:
     ccreate = ccreate.readlines()
@@ -53,13 +52,27 @@ with open('data/verify.txt', 'r') as vverify:
 with open('data/check.txt', 'r') as ccheck:
     ccheck = ccheck.readlines()
 
+with open('data/thanks.txt', 'r') as thanks:
+    thanks = thanks.readlines()
 
-@bot.message_handler(commands=['start', 'help'])
+with open('data/sorry.txt', 'r') as sorry:
+    sorry = sorry.readlines()
+
+
+@bot.message_handler(commands=['start'])
 def send_message(message):
     """
     Приветственное сообщение.
     """
     bot.send_message(message.chat.id, random.choice(hello), reply_markup=markup)
+
+
+@bot.message_handler(commands=['help'])
+def send_message(message):
+    """
+    Приветственное сообщение.
+    """
+    bot.send_message(message.chat.id, random.choice(help), reply_markup=markup)
 
 
 @bot.message_handler(commands=['create'])
@@ -90,7 +103,8 @@ def me_create(message):
     """
 
     # Проверка на наличие участников
-    if 'Вася' and 'ABBYY' in message.text.split(' '):
+    # if morph.parse('Вася')[0].normal_form and morph.parse('ABBYY')[0].normal_form in message.text.split(' '): # Лемматизирую не то, что нужно
+    if 'вася' and 'abbyy' in [morph.parse(w)[0].normal_form for w in message.text.split(' ')]:
         db.save_result(message.text)
         # keyboard_hider = types.ReplyKeyboardHide()
         bot.send_message(message.chat.id, random.choice(thanks), reply_markup=markup)
@@ -133,13 +147,13 @@ def me_verify(message):
     what_to_check = db.get_random_periphrase()  # !!!!!
     # bot.send_message(message.chat.id, parse_mode='HTML', text=what_to_check)
     # Проверка на наличие участников
-    if 'ДА' in message.text.split(' '):
+    if 'Да' in message.text.split(' '):
         periphrase_points = db.get_periphrase_points(what_to_check)
         periphrase_points += 1
         db.save_periphrase_points(periphrase_points)
         bot.send_message(message.chat.id, random.choice(thanks), reply_markup=markup)
         periphrase_step[message.chat.id] = PERIPHRASE_VERIFIED
-    elif 'НЕТ' in message.text.split(' '):
+    elif 'Нет' in message.text.split(' '):
         periphrase_points = db.get_periphrase_points(what_to_check)
         periphrase_points -= 1
         db.save_periphrase_points(periphrase_points)
@@ -182,7 +196,7 @@ def me_verify_check(message):
     # Проверка на наличие участников
     what_to_check = db.get_check_periphrase()
     answer = db.get_periphrase_value(what_to_check)
-    if 'ДА' or 'НЕТ' in message.text.split(' '):
+    if 'Да' or 'Нет' in message.text.split(' '):
         if message.text == answer:
             person_points = db.get_person_points('author')
             person_points += 1
@@ -206,3 +220,4 @@ if __name__ == '__main__':
         time.sleep(200)
 
 # В help описать понятия: факт работы, обязательно использовать участников. Задай свой вопрос
+# у васи, васе
