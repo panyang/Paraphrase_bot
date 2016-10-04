@@ -30,8 +30,8 @@ PERIPHRASE_VERIFY = 'verify'
 PERIPHRASE_VERIFIED = 'verified'
 PERIPHRASE_VERIFY2 = 'verify2'
 PERIPHRASE_VERIFIED2 = 'verified2'
-WILL_YOU_HELP_СREATE = 'will_you_help_create'
-WILL_YOU_HELP_СHECK = 'will_you_help_сheck'
+WILL_YOU_HELP_CREATE = 'will_you_help_create'
+WILL_YOU_HELP_CHECK = 'will_you_help_сheck'
 WILL_YOU_HELP_VERIFY = 'will_you_help_verify'
 BUSY = 'busy'
 
@@ -81,10 +81,10 @@ def create(message):
     При выборе команды create пользователь получает рандомный перифраз.
     """
     bot.send_message(message.chat.id, str(random.choice(ccreate)), reply_markup=markup_help)
-    periphrase_step[message.chat.id] = WILL_YOU_HELP_СREATE
+    periphrase_step[message.chat.id] = WILL_YOU_HELP_CREATE
 
 
-@bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == WILL_YOU_HELP_СREATE)
+@bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == WILL_YOU_HELP_CREATE)
 def will_you_help_create(message):
     if 'Помочь' in message.text.split(' '):
         bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase())
@@ -171,11 +171,11 @@ def verify_check(message):
     'на вшивость'.
     """
     bot.send_message(message.chat.id, random.choice(ccheck), reply_markup=markup_help)
-    periphrase_step[message.chat.id] = WILL_YOU_HELP_СHECK
+    periphrase_step[message.chat.id] = WILL_YOU_HELP_CHECK
     # где-то надо прописывать, какой именно факт
 
 
-@bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == WILL_YOU_HELP_СHECK)
+@bot.message_handler(func=lambda message: periphrase_step.get(message.chat.id) == WILL_YOU_HELP_CHECK)
 def will_you_help_check(message):
     if 'Помочь' in message.text.split(' '):
         bot.send_message(message.chat.id, parse_mode='HTML', text=db.get_random_periphrase(), reply_markup=markup_y_n)
