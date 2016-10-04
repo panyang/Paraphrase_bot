@@ -37,25 +37,25 @@ BUSY = 'busy'
 
 periphrase_step = {}
 
-with open('data/hello.txt', 'r') as hello:
+with open('data/hello.txt', 'r', encoding='utf-8') as hello:
     hello = hello.readlines()
 
-with open('data/help.txt', 'r') as help:
+with open('data/help.txt', 'r', encoding='utf-8') as help:
     help = help.readlines()
 
-with open('data/create.txt', 'r') as ccreate:
+with open('data/create.txt', 'r', encoding='utf-8') as ccreate:
     ccreate = ccreate.readlines()
 
-with open('data/verify.txt', 'r') as vverify:
+with open('data/verify.txt', 'r', encoding='utf-8') as vverify:
     vverify = vverify.readlines()
 
-with open('data/check.txt', 'r') as ccheck:
+with open('data/check.txt', 'r', encoding='utf-8') as ccheck:
     ccheck = ccheck.readlines()
 
-with open('data/thanks.txt', 'r') as thanks:
+with open('data/thanks.txt', 'r', encoding='utf-8') as thanks:
     thanks = thanks.readlines()
 
-with open('data/sorry.txt', 'r') as sorry:
+with open('data/sorry.txt', 'r', encoding='utf-8') as sorry:
     sorry = sorry.readlines()
 
 
